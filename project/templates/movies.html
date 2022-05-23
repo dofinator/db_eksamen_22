@@ -1,0 +1,10 @@
+//templates/movies.html
+{% extends 'layout.html' %}
+  
+{% block title %}Movies{% endblock %}
+  
+{% block content %}
+<h1 class="h2">Dashboard</h1>
+<p>Welcome back, {{ account['name'] }}!</p>
+<p>Movies = {{account['movies']}}</p>
+{% endblock %}

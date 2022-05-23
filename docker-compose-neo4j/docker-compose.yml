@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  neo4j:
+    image: neo4j:4.0
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: unless-stopped
+    environment:
+      - dbms.memory.heap.initial_size=1024m 
+      - dbms.memory.heap.max_size=4G
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - ./data:/data
+      - ./conf:/conf
+      - ./import:/import
+      - ./logs:/logs
+      - ./plugins:/plugins

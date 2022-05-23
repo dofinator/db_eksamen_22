@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FlaskApp</title>
+    <style>
+        .todo {
+            padding: 20px;
+            margin: 10px;
+            background-color: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Writeeeeee review</h1>
+    <hr>
+
+    <body class="centered-wrapper">
+        <form method="post">
+            <p>
+                <b><label for="review">Write review</label></b>
+            </p>
+            <p>
+                <input type="text" name="review_text" placeholder="Write your review here"></input>
+            </p>
+            <div>
+                {% for movie in movies %}
+                <p><i>{{movie}}</i></p>
+                <p>
+                    <input id="degree-1" name="movie_name" required type="radio" value="{{movie}}">
+                    <label for="degree-1">Select</label>
+                </p>
+                {% endfor %}
+            </div>
+            <hr>
+            <div>
+                <p>
+                    <input id="degree-0" name="rating" required type="radio" value="Good">
+                    <label for="degree-0">Good</label>
+                </p>
+                <p>
+                    <input id="degree-1" name="rating" required type="radio" value="Bad">
+                    <label for="degree-1">Bad</label>
+                </p>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+        </div>
+
+        <hr>
+        <div class="review">
+            {% for review in reviews %}
+            <p>{{ review['name']}}</p>
+            <p>{{ review['review'] }}</p>
+            <p>{{ review['rating']}}</p>
+            <form method="DELETE" action="{{ url_for('delete', id=review['_id']) }}">
+                <input type="submit" value="Delete review"
+                    onclick="return confirm('Are you sure you want to delete this review?')">
+            </form>
+            {% endfor %}
+
+        </div>
+
+    </body>
+
+</html>
