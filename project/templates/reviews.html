@@ -1,6 +1,5 @@
+<html>
 
-{% extends 'layout.html' %}
-{% block content %}
 <head>
     <meta charset="UTF-8">
     <title>FlaskApp</title>
@@ -12,36 +11,26 @@
         }
     </style>
 </head>
-<<<<<<< HEAD
 
 <body>
     <h1>Write review</h1>
-=======
-    <h1>Writeeeeee review</h1>
->>>>>>> 1a70f07980242861641c0374000c0ca3d6abcb33
+
     <hr>
 
-    <form action="{{ url_for('write_review') }}" method="post">
+    <form method="post">
         <div class="form-group">
-            <label for="movie" class="cols-sm-2 control-label">Search for a movie</label>
-            <div class="cols-sm-10">
-                <div class="input-group">
-                    <span class="input-group-addon"><i class="fa fa-envelope fa" aria-hidden="true"></i></span>
-                    <input type="text" class="form-control" name="movie" id="movie" placeholder="Search for a movie" />
-                </div>
-            </div>
+            <p>
+                <b><label for="movielabel">Search for a movie</label></b>
+            </p>
+            <p>
+                <input type="text" name="movie" placeholder="Search for a movie"></input>
+            </p>
         </div>
 
-        <input type="submit" value="Search" class="form-control btn btn-primary " name="">
+        <input type="submit" value="search" class="form-control btn btn-primary " name="search">
     </form>
 
-    <form method="post" id="writereview">
-        <p>
-            <b><label for="review">Write review</label></b>
-        </p>
-        <p>
-            <input type="text" name="review_text" placeholder="Write your review here"></input>
-        </p>
+    <form method="post">
         <div>
             {% for movie in movies %}
             <p><i>{{movie}}</i></p>
@@ -51,6 +40,13 @@
             </p>
             {% endfor %}
         </div>
+        <hr>
+        <p>
+            <b><label for="review">Write review</label></b>
+        </p>
+        <p>
+            <input type="text" name="review_text" placeholder="Write your review here"></input>
+        </p>
         <hr>
         <div>
             <p>
@@ -65,10 +61,8 @@
 
         <button type="submit">Submit</button>
     </form>
-    </div>
-
-<<<<<<< HEAD
     <hr>
+    </div>
     <div class="review">
         {% for review in reviews %}
         <p>{{ review['name']}}</p>
@@ -85,7 +79,3 @@
 </body>
 
 </html>
-=======
-        </div>
-        {% endblock %}
->>>>>>> 1a70f07980242861641c0374000c0ca3d6abcb33
