@@ -25,11 +25,6 @@ port = os.getenv("PORT", 8080)
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
-test = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 })
-for x in test:
-    print(x["name"])
-    
-
 def get_movies(driver):
     all_movies = []
     session = driver.session()
@@ -38,20 +33,25 @@ def get_movies(driver):
     return all_movies
 
 @app.route('/', methods=('GET', 'POST'))
-def index():
+def write_review():
+
     all_movies = get_movies(driver)
+    my_id = request.form.get("movie","")
+    print (my_id)
+    # if request.method == "POST" and request.:
+    #     print(request.form['movie'])
+
     if request.method=='POST':
         review = request.form['review_text']
         movie_name = request.form['movie_name']
         rating = request.form['rating']
-        print(rating)
         date = datetime.now().strftime("%x")
         reviews.insert_one({'review': review, 'name': movie_name, 'date': date, 'rating': rating})
         return redirect(url_for('index'))
 
     all_reviews = reviews.find()
    
-    return render_template('index.html', reviews=all_reviews, movies = all_movies)
+    return render_template('index.html', movies = all_movies)
 
 @app.route('/<id>/delete/')
 def delete(id):
