@@ -3,7 +3,7 @@ from pymongo import MongoClient
 import os
 import traceback
 from utils import get_connection_postgres
-from settings import CONNECTION_POSTGRES
+#from settings import CONNECTION_POSTGRES
 from neo4j import GraphDatabase, basic_auth
 
 
@@ -18,7 +18,7 @@ neo4j_version = os.getenv("NEO4J_VERSION", "4")
 NEO4J_URI="neo4j://localhost:7687 "
 NEO4J_DATABASE="neo4j" 
 NEO4J_USER="neo4j" 
-NEO4J_PASSWORD="password"
+NEO4J_PASSWORD="Sumit2630"
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
@@ -26,7 +26,7 @@ driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSW
 def index():
     try:
         return_recommened_movies = []
-        movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
+        movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 })
         with driver.session() as session:
             for movie in movies:
                 recommended_movies = []
@@ -41,7 +41,6 @@ def index():
                 recommended_dict[movie.get("name")] = recommended_movies
                 return_recommened_movies.append(recommended_dict)
             print(return_recommened_movies)
-
             return render_template('recommendations.html', movies=return_recommened_movies)
     except:
         # traceback.print_exc()
@@ -50,7 +49,7 @@ def index():
         #         with conn.cursor() as cursor:
         #             cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
         # flash('Looks like something went wrong')
-        return render_template('login.html')
+        return render_template('recommendations.html')
 
 
 if __name__ == "__main__":
