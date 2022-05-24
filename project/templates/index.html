@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
 
+{% extends 'layout.html' %}
+{% block content %}
 <head>
     <meta charset="UTF-8">
     <title>FlaskApp</title>
@@ -12,8 +12,6 @@
         }
     </style>
 </head>
-
-<body>
     <h1>Writeeeeee review</h1>
     <hr>
 
@@ -63,7 +61,4 @@
             {% endfor %}
 
         </div>
-
-    </body>
-
-</html>
+        {% endblock %}

@@ -37,7 +37,7 @@ def get_movies(driver):
         all_movies.append(record["m.title"])
     return all_movies
 
-@app.route('/', methods=('GET', 'POST'))
+@app.route('/movies/review', methods=('GET', 'POST'))
 def index():
     all_movies = get_movies(driver)
     if request.method=='POST':
@@ -51,7 +51,7 @@ def index():
 
     all_reviews = reviews.find()
    
-    return render_template('index.html', reviews=all_reviews, movies = all_movies)
+    return render_template('index.html', reviews=all_reviews, movies=all_movies)
 
 @app.route('/<id>/delete/')
 def delete(id):
