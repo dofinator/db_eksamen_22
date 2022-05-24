@@ -22,7 +22,7 @@ def home():
             return render_template('home.html', account=session)
         # User is not loggedin redirect to login page
         
-        return redirect(url_for('login'))
+        else: return redirect(url_for('login'))
     except:
         traceback.print_exc()
         error = traceback.format_exc()

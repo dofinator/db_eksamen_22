@@ -7,7 +7,13 @@
 <h1 class="h2">Dashboard</h1>
 <p>Welcome back user, {{ account['name'] }}!</p>
 
+<h1>Recommended movies based on your reviews</h1>
+<div>
+    #{% for movie in movies[0] %}
+    <p><i>{{movie}}</i></p>
 
+    {% endfor %}
+</div>
 
 
 {% endblock %}

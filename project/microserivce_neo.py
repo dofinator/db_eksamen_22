@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, g, flash
+from flask import Flask, render_template, request, url_for, redirect, g, flash, session
 from pymongo import MongoClient
 import os
 import traceback
@@ -21,11 +21,11 @@ def index():
     try:
         return_recommened_movies = []
         movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
-        with driver.session() as session:
+        with driver.session() as neodb:
             for movie in movies:
                 recommended_movies = []
                 recommended_dict = {}
-                similar_movies = session.run("MATCH (m:Movie)-[:IS_GENRE]->(g:Genre)<-[:IS_GENRE]-(rec:Movie)"
+                similar_movies = neodb.run("MATCH (m:Movie)-[:IS_GENRE]->(g:Genre)<-[:IS_GENRE]-(rec:Movie)"
                                     "WHERE m.title = $title " 
                                     "WITH rec, COLLECT(g.name) AS genres, COUNT(*) AS commonGenres " 
                                     "RETURN rec.title, genres " 
@@ -36,7 +36,7 @@ def index():
                 return_recommened_movies.append(recommended_dict)
             print(return_recommened_movies)
 
-            return render_template('recommendations.html', movies=return_recommened_movies)
+            return render_template('home.html', account=session, movies=return_recommened_movies)
     except:
         # traceback.print_exc()
         # error = traceback.format_exc()
