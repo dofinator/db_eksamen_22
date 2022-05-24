@@ -1,4 +1,3 @@
-
 from datetime import datetime
 from flask import Flask, render_template, request, url_for, redirect, g
 from pymongo import MongoClient

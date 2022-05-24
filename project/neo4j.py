@@ -1,13 +1,11 @@
-from flask import Flask, render_template, request, url_for, redirect, g
+from flask import Flask, render_template, request, url_for, redirect, g, flash
 from pymongo import MongoClient
-from bson.objectid import ObjectId
 import os
 import traceback
+from utils import get_connection_postgres
+from settings import CONNECTION_POSTGRES
+from neo4j import GraphDatabase, basic_auth
 
-from neo4j import (
-    GraphDatabase,
-    basic_auth,
-)
 
 app = Flask(__name__)
 client = MongoClient('localhost', 27017)
@@ -21,7 +19,7 @@ NEO4J_URI="neo4j://localhost:7687 "
 NEO4J_DATABASE="neo4j" 
 NEO4J_USER="neo4j" 
 NEO4J_PASSWORD="password"
-#port = os.getenv("PORT", 8080)
+
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
 @app.route('/movies/recommendations', methods=('GET'))
@@ -46,12 +44,12 @@ def index():
 
             return render_template('recommendations.html', movies=return_recommened_movies)
     except:
-        traceback.print_exc()
-        error = traceback.format_exc()
-        with get_connection() as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
-        flash('Looks like something went wrong')
+        # traceback.print_exc()
+        # error = traceback.format_exc()
+        # with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+        #         with conn.cursor() as cursor:
+        #             cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
+        # flash('Looks like something went wrong')
         return render_template('login.html')
 
 
