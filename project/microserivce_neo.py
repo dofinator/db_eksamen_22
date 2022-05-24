@@ -3,22 +3,16 @@ from pymongo import MongoClient
 import os
 import traceback
 from utils import get_connection_postgres
-from settings import CONNECTION_POSTGRES
+from settings import NEO4J_DATABASE, NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER
 from neo4j import GraphDatabase, basic_auth
 
 
 app = Flask(__name__)
-client = MongoClient('localhost', 27017)
+client = MongoClient('localhost', 27018, username='root',password='rootpassword')
 
 db = client.flask_db
 reviews = db.reviews
 movies = db.movies
-
-neo4j_version = os.getenv("NEO4J_VERSION", "4")
-NEO4J_URI="neo4j://localhost:7687 "
-NEO4J_DATABASE="neo4j" 
-NEO4J_USER="neo4j" 
-NEO4J_PASSWORD="password"
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
