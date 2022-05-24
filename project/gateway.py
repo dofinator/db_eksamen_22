@@ -44,7 +44,7 @@ def movies():
             return render_template('movies.html', account=session)
     return redirect(url_for('login'))
 
-@app.route('/login/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     try:
         # Check if "username" and "password" POST requests exist (user submitted form)

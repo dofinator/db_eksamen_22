@@ -10,7 +10,7 @@ from neo4j import (
 )
 app = Flask(__name__)
 
-client = MongoClient('localhost', 27017)
+client = MongoClient('localhost', 27018, username='root',password='rootpassword')
 
 db = client.flask_db
 reviews = db.reviews
@@ -20,7 +20,7 @@ neo4j_version = os.getenv("NEO4J_VERSION", "4")
 NEO4J_URI="neo4j://localhost:7687 "
 NEO4J_DATABASE="neo4j" 
 NEO4J_USER="neo4j" 
-NEO4J_PASSWORD="Sumit2630"
+NEO4J_PASSWORD="password"
 port = os.getenv("PORT", 8080)
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
