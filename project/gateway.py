@@ -1,11 +1,12 @@
 #app.py
 from flask import Flask, request, session, redirect, url_for, render_template, flash
-import psycopg2 #pip install psycopg2 
+import psycopg2 
 import psycopg2.extras
 import re
 import requests 
 import traceback
-from settings import CONNECTION, SECRET
+from utils import get_connection_postgres
+from settings import CONNECTION_POSTGRES, SECRET
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
  
@@ -13,25 +14,32 @@ app = Flask(__name__)
 app.secret_key = SECRET
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
 
-
-
-def get_connection():
-        return psycopg2.connect(CONNECTION)
  
 @app.route('/')
 def home():
-    # Check if user is loggedin
-    if 'loggedin' in session and session['loggedin'] == True:
+    try:
+        # Check if user is loggedin
+        if 'loggedin' in session and session['loggedin'] == True:
+            # User is loggedin show them the home page
+            return render_template('home.html', account=session)
+        # User is not loggedin redirect to login page
+        
+        return redirect(url_for('login'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
+        
+
     
-        # User is loggedin show them the home page
-        return render_template('home.html', account=session)
-    # User is not loggedin redirect to login page
-    return redirect(url_for('login'))
- 
-@app.route('/movies/welcome', methods=['GET'])
+@app.route('/movies/recommendations', methods=['GET'])
 def movies():
     if 'loggedin' in session and session['loggedin'] == True:
-        movies = requests.get('http://127.0.0.1:5001/movies/welcome')
+        movies = requests.get('http://127.0.0.1:5001/movies/recommendations')
         if movies.status_code == 200:
             movies = movies.json()
             session['movies'] = movies        
@@ -47,7 +55,7 @@ def login():
             email = request.form['email']
             # Check if account exists using MySQL
             try:
-                with get_connection() as conn:
+                with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                     with conn.cursor() as cursor:
                         cursor.execute('SELECT id,email,password,name FROM users WHERE email = %s', [email])
                 # Fetch one record and return result
@@ -55,7 +63,7 @@ def login():
             except:
                 traceback.print_exc()
                 error = traceback.format_exc()
-                with get_connection() as conn:
+                with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                     with conn.cursor() as cursor:
                         cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
                 flash('Looks like something went wrong')
@@ -82,7 +90,7 @@ def login():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection() as conn:
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
         flash('Looks like something went wrong')
@@ -92,6 +100,9 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     try:
+        if 'loggedin' in session and session['loggedin'] == True:
+            flash('You cannot register a new user when u are logged in')
+            return render_template('profile.html', account=session)
         # Check if "username", "password" and "email" POST requests exist (user submitted form)
         if request.method == 'POST' and 'name' in request.form and 'password' in request.form and 'email' in request.form:
             name = request.form['name']
@@ -108,7 +119,7 @@ def register():
     
             #Check if account exists
         
-            with get_connection() as conn:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('SELECT * FROM users WHERE email = %s', [email])
                     account = cursor.fetchone()
@@ -124,7 +135,7 @@ def register():
                 flash('Please fill out the form!')
             else:
                 # Else if account doesnt exists and form data input is valid, then insert new account into public.users table
-                with get_connection() as conn:
+                with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                     with conn.cursor() as cursor:
                         cursor.execute("INSERT INTO users (name, password, email) VALUES (%s,%s,%s)", (name, _hashed_password, email))
                 flash('You have successfully registered!')
@@ -136,7 +147,7 @@ def register():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection() as conn:
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
             with conn.cursor() as cursor:
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
@@ -155,7 +166,7 @@ def logout():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection() as conn:
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
             with conn.cursor() as cursor:
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         return redirect(url_for('login'))
@@ -166,7 +177,7 @@ def profile():
     try:
         if 'loggedin' in session and session['loggedin'] == True:
             
-            with get_connection() as conn:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('SELECT * FROM users WHERE id = %s', [session['id']])
                     results = cursor.fetchone()
@@ -182,7 +193,7 @@ def profile():
         traceback.print_exc()
         error = traceback.format_exc()
         user_id = session['id']
-        with get_connection() as conn:
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
         flash('Looks like something went wrong and u have been logged out')

@@ -1,6 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
 
+{% extends 'layout.html' %}
+{% block content %}
 <head>
     <meta charset="UTF-8">
     <title>FlaskApp</title>
@@ -12,9 +12,13 @@
         }
     </style>
 </head>
+<<<<<<< HEAD
 
 <body>
     <h1>Write review</h1>
+=======
+    <h1>Writeeeeee review</h1>
+>>>>>>> 1a70f07980242861641c0374000c0ca3d6abcb33
     <hr>
 
     <form action="{{ url_for('write_review') }}" method="post">
@@ -63,6 +67,7 @@
     </form>
     </div>
 
+<<<<<<< HEAD
     <hr>
     <div class="review">
         {% for review in reviews %}
@@ -80,3 +85,7 @@
 </body>
 
 </html>
+=======
+        </div>
+        {% endblock %}
+>>>>>>> 1a70f07980242861641c0374000c0ca3d6abcb33
