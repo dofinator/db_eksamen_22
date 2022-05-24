@@ -22,7 +22,7 @@ NEO4J_PASSWORD="password"
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
-@app.route('/movies/recommendations', methods=('GET'))
+@app.route('/movies/recommendations', methods=(['GET']))
 def index():
     try:
         return_recommened_movies = []
