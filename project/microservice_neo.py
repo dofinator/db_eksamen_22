@@ -19,6 +19,7 @@ driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSW
 @app.route('/movies/recommendations', methods=(['GET']))
 def index():
     try:
+        print(session)
         return_recommened_movies = []
         movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
         with driver.session() as neodb:

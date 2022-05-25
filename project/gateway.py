@@ -7,7 +7,9 @@ from utils import get_connection_postgres
 from settings import CONNECTION_POSTGRES, SECRET
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
- 
+from flask_session import Session
+import redis
+
 app = Flask(__name__)
 app.secret_key = SECRET
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
