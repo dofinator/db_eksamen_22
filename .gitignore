@@ -3,3 +3,4 @@ settings.py
 __pycache__
 transactions/
 postgres-data/
+databases/
