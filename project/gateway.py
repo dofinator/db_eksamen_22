@@ -15,7 +15,7 @@ app.secret_key = SECRET
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
 
  
-@app.route('/')
+@app.route('/home')
 def home():
     try:
         # Check if user is loggedin
@@ -36,15 +36,29 @@ def home():
         
 
     
-@app.route('/movies/recommendations', methods=['GET'])
+@app.route('/user/getreviews', methods=['GET'])
 def movies():
     if 'loggedin' in session and session['loggedin'] == True:
-        movies = requests.get('http://127.0.0.1:5001/movies/recommendations')
+        user_id = session['id']
+        movies = requests.get(f'http://127.0.0.1:5001/user/getreviews/{user_id}')
         if movies.status_code == 200:
             movies = movies.json()
             session['movies'] = movies        
             return render_template('movies.html', account=session)
     return redirect(url_for('login'))
+
+@app.route('/search_movie', methods=['GET', 'POST'])
+def search_movie():
+    if request.method=='POST' and 'movie' in request.form:
+        movie = request.form.get("movie")
+        searched_movies = requests.get('http://127.0.0.1:5001/getmoviessearch/'+ movie)
+        if searched_movies.status_code == 200:
+            searched_movies = searched_movies.json()
+            return render_template('reviews.html', movies=searched_movies)
+        else:
+            return redirect(url_for('write_review'))
+
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -69,7 +83,6 @@ def login():
                 flash('Looks like something went wrong')
                 return render_template('login.html')
             if account:
-                print(account)
                 user_id, user_email, user_password_rs, user_name = account
                 # If account exists in users table in out database
                 if check_password_hash(user_password_rs, password):
