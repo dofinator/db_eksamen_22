@@ -47,6 +47,14 @@ def index():
         # flash('Looks like something went wrong')
         return render_template('login.html')
 
+@app.route('/getmoviessearch', methods=('GET', 'POST'))
+def get_movies_search(movie):
+    all_movies = []
+    session = driver.session()
+    for record in session.run("MATCH (m:Movie) WHERE toLower(m.title) CONTAINS toLower($title) RETURN m.title", {"title": movie}):
+        all_movies.append(record["m.title"])
+    return all_movies
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
