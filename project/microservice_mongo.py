@@ -25,6 +25,7 @@ port = os.getenv("PORT", 8080)
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
+#LAV ENDPOINT TIL AT HENTE RECOMMENDATIONS
 def get_movies(movie):
     all_movies = []
     session = driver.session()
@@ -39,7 +40,7 @@ def write_review():
         movie = request.form.get("movie")
         searched_movies = get_movies(movie)
         return render_template('reviews.html', movies = searched_movies)
-
+                                            
     if request.method=='POST' and "review_text" in request.form:
         review = request.form['review_text']
         movie_name = request.form['movie_name']
@@ -52,7 +53,8 @@ def write_review():
 
 @app.route('/getreviews', methods=('GET', 'POST'))
 def get_reviews():
-    movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
+    movies = db.reviews.find({"user_id": "user_id", "rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
+    return movies
 
 @app.route('/<id>/delete/')
 def delete(id):
