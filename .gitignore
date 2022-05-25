@@ -1,6 +1,5 @@
 settings.py
 *.log
 *.tmp
-*.stat
 __pycache__
 transactions/
