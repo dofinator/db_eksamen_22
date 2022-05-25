@@ -25,11 +25,25 @@ NEO4J_PASSWORD="password"
 port = os.getenv("PORT", 8080)
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
+<<<<<<< HEAD
 
+=======
+print('CLIENT : ',client)
+def get_movies(movie):
+    all_movies = []
+    session = driver.session()
+    for record in session.run("MATCH (m:Movie) WHERE toLower(m.title) CONTAINS toLower($title) RETURN m.title", {"title": movie}):
+        all_movies.append(record["m.title"])
+    return all_movies
+>>>>>>> 7a33db855f3da1c9e6ace510eff11a582b8dcaba
 
 @app.route('/', methods=('GET', 'POST'))
 def write_review():
     all_reviews = reviews.find().limit(1)
+<<<<<<< HEAD
+=======
+    print('all_reviews', all_reviews)
+>>>>>>> 7a33db855f3da1c9e6ace510eff11a582b8dcaba
     if request.method=='POST' and 'movie' in request.form:
         movie = request.form.get("movie")
         searched_movies = requests.get('http://127.0.0.1:5001/getmoviessearch')
