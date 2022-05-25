@@ -34,7 +34,7 @@ def get_movies(movie):
 
 @app.route('/', methods=('GET', 'POST'))
 def write_review():
-    all_reviews = reviews.find().limit(5)
+    all_reviews = reviews.find()
     if request.method=='POST' and 'movie' in request.form:
         movie = request.form.get("movie")
         searched_movies = get_movies(movie)
@@ -49,6 +49,10 @@ def write_review():
         return redirect(url_for('write_review'))
    
     return render_template('reviews.html', reviews = all_reviews)
+
+@app.route('/getreviews', methods=('GET', 'POST'))
+def get_reviews():
+    movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
 
 @app.route('/<id>/delete/')
 def delete(id):
