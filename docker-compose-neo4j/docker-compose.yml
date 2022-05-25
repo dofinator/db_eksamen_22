@@ -10,6 +10,7 @@ services:
       - dbms.memory.heap.initial_size=1024m 
       - dbms.memory.heap.max_size=4G
       - NEO4J_AUTH=neo4j/password
+      - dbms.recovery.fail_on_missing_files=false
     volumes:
       - ./data:/data
       - ./conf:/conf
