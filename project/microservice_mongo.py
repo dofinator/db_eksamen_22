@@ -24,7 +24,7 @@ NEO4J_PASSWORD="password"
 port = os.getenv("PORT", 8080)
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
-
+print('CLIENT : ',client)
 def get_movies(movie):
     all_movies = []
     session = driver.session()
@@ -34,7 +34,8 @@ def get_movies(movie):
 
 @app.route('/', methods=('GET', 'POST'))
 def write_review():
-    all_reviews = reviews.find()
+    all_reviews = reviews.find().limit(1)
+    print('all_reviews', all_reviews)
     if request.method=='POST' and 'movie' in request.form:
         movie = request.form.get("movie")
         searched_movies = get_movies(movie)
