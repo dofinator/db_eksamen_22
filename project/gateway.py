@@ -7,7 +7,6 @@ from utils import get_connection_postgres
 from settings import CONNECTION_POSTGRES, SECRET
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_session import Session
 import redis
 
 app = Flask(__name__)
@@ -33,9 +32,7 @@ def home():
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
-        
-
-    
+         
 @app.route('/user/getreviews', methods=['GET'])
 def movies():
     if 'loggedin' in session and session['loggedin'] == True:
@@ -47,17 +44,29 @@ def movies():
             return render_template('movies.html', account=session)
     return redirect(url_for('login'))
 
-@app.route('/search_movie', methods=['GET', 'POST'])
+@app.route('/searchmovie', methods=['GET', 'POST'])
 def search_movie():
     if request.method=='POST' and 'movie' in request.form:
         movie = request.form.get("movie")
         searched_movies = requests.get('http://127.0.0.1:5001/getmoviessearch/'+ movie)
         if searched_movies.status_code == 200:
             searched_movies = searched_movies.json()
-            return render_template('reviews.html', movies=searched_movies)
+            return render_template('home.html', movies=searched_movies, account= session)
         else:
-            return redirect(url_for('write_review'))
+            return redirect(url_for('search_movie'))
 
+@app.route('/writereview', methods=['GET', 'POST'])
+def write_review():
+    if request.method=='POST' and 'rating' in request.form:
+        review = request.form['review_text']
+        movie_name = request.form['movie_name']
+        rating = request.form['rating']
+        all_reviews = requests.post('http://127.0.0.1:5002/writereview/', json={"review": review, "movie_name": movie_name, "rating": rating})
+        if all_reviews.status_code == 200:
+            all_reviews = all_reviews.json()
+            return render_template('home.html', movies=all_reviews, account=session)
+        else:
+            return redirect(url_for('search_movie'))
 
 
 @app.route('/login', methods=['GET', 'POST'])

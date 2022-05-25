@@ -1,13 +1,13 @@
 //templates/home.html
 {% extends 'layout.html' %}
-  
+
 {% block title %}Home{% endblock %}
-  
+
 {% block content %}
 <h1 class="h2">Dashboard</h1>
 <p>Welcome back user, {{ account['name'] }}!</p>
 <hr>
-<form action="{{ url_for('searchmovie') }}" method="post">
+<form action="{{ url_for('search_movie') }}" method="post">
     <div class="form-group">
         <p>
             <b><label for="movie">Search for a movie</label></b>
@@ -20,7 +20,7 @@
     <input type="submit" value="search" class="form-control btn btn-primary " name="search">
 </form>
 
-<form method="post">
+<form action="{{ url_for('write_review') }}" method="post">
     <div>
         {% for movie in movies %}
         <p><i>{{movie}}</i></p>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, g, flash, session
+from flask import Flask, jsonify, render_template, request, url_for, redirect, g, flash, session
 from pymongo import MongoClient
 import os
 import traceback
@@ -47,13 +47,14 @@ def index():
         # flash('Looks like something went wrong')
         return render_template('login.html')
 
-@app.route('/getmoviessearch', methods=('GET', 'POST'))
+@app.route('/getmoviessearch/<movie>', methods=('GET', 'POST'))
 def get_movies_search(movie):
     all_movies = []
+    print(movie)
     session = driver.session()
     for record in session.run("MATCH (m:Movie) WHERE toLower(m.title) CONTAINS toLower($title) RETURN m.title", {"title": movie}):
         all_movies.append(record["m.title"])
-    return all_movies
+    return jsonify(all_movies)
 
 
 if __name__ == "__main__":
