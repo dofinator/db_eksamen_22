@@ -8,6 +8,7 @@ from neo4j import (
     GraphDatabase,
     basic_auth,
 )
+import requests
 app = Flask(__name__)
 
 client = MongoClient('localhost', 27017, username='root',password='rootpassword')
@@ -25,6 +26,7 @@ port = os.getenv("PORT", 8080)
 
 driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSWORD))
 
+
 def get_movies(movie):
     all_movies = []
     session = driver.session()
@@ -32,12 +34,18 @@ def get_movies(movie):
         all_movies.append(record["m.title"])
     return all_movies
 
+
 @app.route('/', methods=('GET', 'POST'))
 def write_review():
+
     all_reviews = reviews.find()
+
+
+    print('all_reviews', all_reviews)
+
     if request.method=='POST' and 'movie' in request.form:
         movie = request.form.get("movie")
-        searched_movies = get_movies(movie)
+        searched_movies = requests.get('http://127.0.0.1:5001/getmoviessearch')
         return render_template('reviews.html', movies = searched_movies)
 
     if request.method=='POST' and "review_text" in request.form:
@@ -48,7 +56,15 @@ def write_review():
         reviews.insert_one({'review': review, 'name': movie_name, 'date': date, 'rating': rating})
         return redirect(url_for('write_review'))
    
-    return render_template('reviews.html', reviews = all_reviews)
+    return render_template('reviews.html')
+
+
+
+@app.route('/getreviews', methods=('GET', 'POST'))
+def get_reviews():
+    movies = db.reviews.find({"user_id": "user_id", "rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
+    return movies
+
 
 @app.route('/<id>/delete/')
 def delete(id):
