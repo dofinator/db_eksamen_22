@@ -20,6 +20,7 @@
     <input type="submit" value="search" class="form-control btn btn-primary " name="search">
 </form>
 
+
 <form action="{{ url_for('write_review') }}" method="post">
     <div>
         {% for movie in movies %}
@@ -51,14 +52,16 @@
 
     <button type="submit">Submit</button>
 </form>
+
 <hr>
+
 </div>
 <div class="review">
     {% for review in reviews %}
     <p>{{ review['name']}}</p>
     <p>{{ review['review'] }}</p>
     <p>{{ review['rating']}}</p>
-    <form method="DELETE" action="{{ url_for('delete', id=review['_id']) }}">
+    <form method="DELETE" action="{{ url_for('delete_review', id=review['_id']) }}">
         <input type="submit" value="Delete review"
             onclick="return confirm('Are you sure you want to delete this review?')">
     </form>

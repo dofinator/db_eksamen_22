@@ -1,5 +1,5 @@
 #app.py
-from flask import Flask, request, session, redirect, url_for, render_template, flash
+from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
 import re
 import requests 
 import traceback
@@ -7,22 +7,18 @@ from utils import get_connection_postgres
 from settings import CONNECTION_POSTGRES, SECRET
 from datetime import timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-import redis
 
 app = Flask(__name__)
 app.secret_key = SECRET
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
 
  
-@app.route('/home')
+@app.route('/')
 def home():
     try:
-        # Check if user is loggedin
+        # checks when accessiong /home is the user is already logged in
         if 'loggedin' in session and session['loggedin'] == True:
-            # User is loggedin show them the home page
             return render_template('home.html', account=session)
-        # User is not loggedin redirect to login page
-        
         else: return redirect(url_for('login'))
     except:
         traceback.print_exc()
@@ -32,7 +28,8 @@ def home():
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
-         
+
+# ??        
 @app.route('/user/getreviews', methods=['GET'])
 def movies():
     if 'loggedin' in session and session['loggedin'] == True:
@@ -44,31 +41,48 @@ def movies():
             return render_template('movies.html', account=session)
     return redirect(url_for('login'))
 
-@app.route('/searchmovie', methods=['GET', 'POST'])
-def search_movie():
-    if request.method=='POST' and 'movie' in request.form:
-        movie = request.form.get("movie")
-        searched_movies = requests.get('http://127.0.0.1:5001/getmoviessearch/'+ movie)
-        if searched_movies.status_code == 200:
-            searched_movies = searched_movies.json()
-            return render_template('home.html', movies=searched_movies, account= session)
-        else:
-            return redirect(url_for('search_movie'))
 
+# Search for a specific movie, calls microservice_neo to retreive all movies related to the input of the user
+@app.route('/h', methods=['POST'])
+def search_movie():
+    if 'loggedin' in session and session['loggedin'] == True:
+        if request.method=='POST' and 'movie' in request.form:
+            movie = request.form.get("movie")
+            searched_movies = requests.get('http://127.0.0.1:5001/getmovies/'+ movie)
+            if searched_movies.status_code == 200:
+                searched_movies = searched_movies.json()
+                return render_template('home.html', movies=searched_movies, account=session)
+            else:
+                return redirect('home')
+        else:
+            return redirect('home')
+    else:
+        return redirect(url_for('login'))
+# 
 @app.route('/writereview', methods=['GET', 'POST'])
 def write_review():
-    if request.method=='POST' and 'rating' in request.form:
-        review = request.form['review_text']
-        movie_name = request.form['movie_name']
-        rating = request.form['rating']
-        all_reviews = requests.post('http://127.0.0.1:5002/writereview/', json={"review": review, "movie_name": movie_name, "rating": rating})
-        if all_reviews.status_code == 200:
-            all_reviews = all_reviews.json()
-            return render_template('home.html', movies=all_reviews, account=session)
-        else:
-            return redirect(url_for('search_movie'))
+    if 'loggedin' in session and session['loggedin'] == True:
+        if request.method=='POST' and 'rating' in request.form:
+            id = session['id']
+            review = request.form['review_text']
+            movie_name = request.form['movie_name']
+            rating = request.form['rating']
+            all_reviews = requests.post('http://127.0.0.1:5002/writereview/', data={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
+            if all_reviews.status_code == 200:
+                all_reviews = all_reviews.json()
+                return render_template('home.html', reviews=all_reviews, account=session)
+            else:
+                return redirect(url_for('search_movie'))
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/deletereview', methods=['DELETE'])
+def delete_review():
+    id = request.form['id']
+    requests.post(f'http://127.0.0.1:5002/{id}/delete/')
 
 
+# Logs in the user
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     try:

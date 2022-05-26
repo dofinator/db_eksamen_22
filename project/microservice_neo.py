@@ -47,7 +47,7 @@ def index():
         # flash('Looks like something went wrong')
         return render_template('login.html')
 
-@app.route('/getmoviessearch/<movie>', methods=('GET', 'POST'))
+@app.route('/getmovies/<movie>', methods=('GET', 'POST'))
 def get_movies_search(movie):
     all_movies = []
     print(movie)
