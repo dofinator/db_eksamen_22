@@ -1,4 +1,3 @@
-//templates/home.html
 {% extends 'layout.html' %}
 
 {% block title %}Home{% endblock %}
@@ -55,7 +54,6 @@
 
 <hr>
 
-</div>
 <div class="review">
     {% for review in reviews %}
     <p>{{ review['name']}}</p>
@@ -68,6 +66,11 @@
     {% endfor %}
 
 </div>
+
+
+
+</div>
+
 
 
 {% endblock %}
