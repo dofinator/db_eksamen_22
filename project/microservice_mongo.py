@@ -1,13 +1,8 @@
 from datetime import datetime
-from urllib import response
-from fastapi import Response
 from flask import flash
 from flask import Flask, jsonify, render_template, request, url_for, redirect, g
 from pymongo import MongoClient
 from bson import json_util, ObjectId
-import os
-import requests
-import json
 
 app = Flask(__name__)
 
@@ -17,27 +12,27 @@ reviews = db.reviews
 movies = db.movies
 
 
-#TODO FIX USERID
 @app.route('/writereview', methods=['POST'])
 def write_review():
     date = datetime.now().strftime("%x")
     data = request.get_json()
-    reviews.insert_one({'review': data['review'], 'name': data['movie_name'], 'date': date, 'rating': data['rating']})
+    id = int(data['id'])
+    reviews.insert_one({'user_id': data['id'], 'review': data['review'], 'name': data['movie_name'], 'date': date, 'rating': data['rating']})
+    
     data = []
-    all_reviews = [doc for doc in reviews.find({})]
+    all_reviews = [doc for doc in reviews.find({"user_id": id})]
     for doc in all_reviews:
-        doc['_id'] = str(doc['_id']) # This does the trick!
+        doc['_id'] = str(doc['_id']) 
         data.append(doc)
     return jsonify(data)
 
-
-#TODO TILFØJ USER ID FRA SESSION
-@app.route('/user/getreviews/', methods=('GET', 'POST'))
-def get_reviews():
+@app.route('/user/getreviews/<user_id>', methods=('GET', 'POST'))
+def get_reviews(user_id):
     data = []
-    all_reviews = [doc for doc in reviews.find({})]
+    id = int(user_id)
+    all_reviews = [doc for doc in reviews.find({"user_id": id})]
     for doc in all_reviews:
-        doc['_id'] = str(doc['_id']) # This does the trick!
+        doc['_id'] = str(doc['_id']) 
         data.append(doc)
     return jsonify(data)
 
@@ -46,7 +41,6 @@ def delete(id):
     reviews.delete_one({"_id": ObjectId(id)})
     return "200"
     
-
 if __name__ == "__main__":
     app.run(debug=True, port=5002)
     

@@ -1,8 +1,5 @@
-from flask import Flask, jsonify, render_template, request, url_for, redirect, g, flash, session
+from flask import Flask, jsonify, render_template, request
 from pymongo import MongoClient
-import os
-import traceback
-from utils import get_connection_postgres
 from settings import NEO4J_DATABASE, NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER
 from neo4j import GraphDatabase, basic_auth
 
@@ -19,24 +16,21 @@ driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSW
 @app.route('/movies/recommendations', methods=(['GET']))
 def index():
     try:
-        return_recommened_movies = []
-        movies = db.reviews.find({"rating":"Good"},{ "_id": 0, "name": 1 }).limit(5)
+        movies = request.get_json()
+        recommended_movies = {}
         with driver.session() as neodb:
-            for movie in movies:
-                print(movie)
-                recommended_movies = []
-                recommended_dict = {}
+            for movie in movies['movies']:
+                recommended_list = []
                 similar_movies = neodb.run("MATCH (m:Movie)-[:IS_GENRE]->(g:Genre)<-[:IS_GENRE]-(rec:Movie)"
                                     "WHERE m.title = $title " 
                                     "WITH rec, COLLECT(g.name) AS genres, COUNT(*) AS commonGenres " 
-                                    "RETURN rec.title, genres " 
+                                    "RETURN rec.title " 
                                     "LIMIT 2 ",
-                                    {"title": movie['name']})
-                print(similar_movies.values())
-                [recommended_movies.append(movie.values()) for movie in similar_movies]
-                recommended_dict[movie.get("name")] = recommended_movies
-                return_recommened_movies.append(recommended_dict)
-        return return_recommened_movies
+                                    {"title": movie})
+                for recommendation in similar_movies.values():
+                    recommended_list.append(recommendation[0])
+                recommended_movies[movie] = recommended_list
+        return recommended_movies
 
     except:
         # traceback.print_exc()

@@ -1,5 +1,6 @@
 #app.py
 from ftplib import all_errors
+import re
 from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
 import requests 
 import traceback
@@ -35,8 +36,8 @@ def home():
 @app.route('/user/getreviews', methods=['GET'])
 def get_reviews():
     if 'loggedin' in session and session['loggedin'] == True:
-        user_id = session['id']
-        all_reviews = requests.get('http://127.0.0.1:5002/user/getreviews/')
+        user_id = str(session['id'])
+        all_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
         if all_reviews.status_code == 200:
             all_reviews = all_reviews.json()
             session['movies'] = all_reviews        
@@ -72,6 +73,7 @@ def write_review():
             all_reviews = requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
             if all_reviews.status_code == 200:         
                 all_reviews = all_reviews.json()
+                session['movies'] = all_reviews  
                 return render_template('home.html', reviews=all_reviews, account=session)
             else:
                 return redirect(url_for('search_movie'))
@@ -83,11 +85,17 @@ def delete_review(id):
     requests.get('http://127.0.0.1:5002/delete/'+ id)
     return redirect(url_for('get_reviews'))
 
-@app.route('/recommendations/', methods=['GET'])
+@app.route('/user/recommendations/', methods=['GET'])
 def recommendations():
-    recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations')
-    print("-----------------")
-    return render_template('recommendations.html', movies=recommended_movies, account=session)
+    movies = []
+    for movie in session['movies']:
+        movies.append(movie['name'])
+    recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies})
+    if recommended_movies.status_code == 200:
+        recommended_movies = recommended_movies.json()
+        print(recommended_movies)
+        return render_template('recommendations.html', recommendations=recommended_movies, account=session)
+    return redirect(url_for('get_reviews'))
 
 # Logs in the user
 @app.route('/login', methods=['GET', 'POST'])
@@ -122,7 +130,6 @@ def login():
                     session['name'] = user_name
                     session['email'] = user_email
                     #Redirect to home page
-                    print("BEFORE HOME----------")
                     return redirect(url_for('home'))
                 else:
                     # Account doesnt exist or username/password incorrect
@@ -220,7 +227,6 @@ def profile():
     # Check if user is loggedin
     try:
         if 'loggedin' in session and session['loggedin'] == True:
-            
             with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('SELECT * FROM users WHERE id = %s', [session['id']])
@@ -228,7 +234,6 @@ def profile():
                     account = {}
                     account['name'] = results[3]
                     account['email'] = results[1]
-                    print('ACCOUNT _____ ',account)
             # Show the profile page with account info
             return render_template('profile.html', account=account)
         # User is not loggedin redirect to login page
