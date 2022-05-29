@@ -2,7 +2,7 @@
 from ftplib import all_errors
 import re
 from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
-import requests 
+import requests
 import traceback
 import json
 from utils import get_connection_postgres
@@ -70,19 +70,15 @@ def write_review():
             review = request.form['review_text']
             movie_name = request.form['movie_name']
             rating = request.form['rating']
-            all_reviews = requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
-            if all_reviews.status_code == 200:         
-                all_reviews = all_reviews.json()
-                session['movies'] = all_reviews  
-                return render_template('home.html', reviews=all_reviews, account=session)
-            else:
-                return redirect(url_for('search_movie'))
+            requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
+            return redirect(url_for('get_reviews'))
     else:
         return redirect(url_for('login'))
 
-@app.route('/deletereview/<id>', methods=['GET', 'POST'])
-def delete_review(id):
-    requests.get('http://127.0.0.1:5002/delete/'+ id)
+@app.route('/deletereview/<id>/<user_id>', methods=['GET', 'POST'])
+def delete_review(id, user_id):
+    user_id = str(session['id'])
+    requests.get(f'http://127.0.0.1:5002/delete/{id}/{user_id}')
     return redirect(url_for('get_reviews'))
 
 @app.route('/user/recommendations/', methods=['GET'])
