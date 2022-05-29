@@ -93,7 +93,6 @@ def recommendations():
     recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies})
     if recommended_movies.status_code == 200:
         recommended_movies = recommended_movies.json()
-        print(recommended_movies)
         return render_template('recommendations.html', recommendations=recommended_movies, account=session)
     return redirect(url_for('get_reviews'))
 

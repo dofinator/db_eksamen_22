@@ -1,35 +1,18 @@
-{% block title %}Recommendations{% endblock %}
+{% extends 'layout.html' %}
+{% block content %}
 
-<!DOCTYPE html>
-<html lang="en">
+<h1>Recommended movies based on your reviews</h1>
 
-<head>
-    <meta charset="UTF-8">
-    <title>FlaskApp</title>
-    <style>
-        .todo {
-            padding: 20px;
-            margin: 10px;
-            background-color: #eee;
-        }
-    </style>
-</head>
+<div>
 
-<body>
-    <h1>Recommended movies based on your reviews</h1>
+    {% for review_movie, recommended_movies in recommendations.items() %}
+    <p>Based on your review on {{review_movie}}. We recommend the following movies:</p>
+    {% for movie in recommended_movies %}
+    <p>{{movie}}</p>
+    {% endfor %}
+    <hr>
+    {% endfor %}
 
-    <div>
+</div>
 
-        {% for review_movie, recommended_movies in recommendations.items() %}
-        <p>Based on your review on {{review_movie}}. We recommend the following movies:</p>
-        {% for movie in recommended_movies %}
-        <p>{{movie}}</p>
-        {% endfor %}
-        <hr>
-        {% endfor %}
-
-    </div>
-
-</body>
-
-</html>
+{% endblock %}

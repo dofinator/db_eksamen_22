@@ -21,9 +21,9 @@ def write_review():
     
     data = []
     all_reviews = [doc for doc in reviews.find({"user_id": id})]
-    for doc in all_reviews:
-        doc['_id'] = str(doc['_id']) 
-        data.append(doc)
+    for review in all_reviews:
+        review['_id'] = str(review['_id']) 
+        data.append(review)
     return jsonify(data)
 
 @app.route('/user/getreviews/<user_id>', methods=('GET', 'POST'))
