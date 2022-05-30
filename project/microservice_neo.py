@@ -25,7 +25,7 @@ def index():
                                     "WHERE m.title = $title " 
                                     "WITH rec, COLLECT(g.name) AS genres, COUNT(*) AS commonGenres " 
                                     "RETURN rec.title " 
-                                    "LIMIT 2 ",
+                                    "LIMIT 3 ",
                                     {"title": movie})
                 for recommendation in similar_movies.values():
                     recommended_list.append(recommendation[0])

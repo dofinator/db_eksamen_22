@@ -28,21 +28,30 @@ def home():
         error = traceback.format_exc()
         with get_connection_postgres(CONNECTION_POSTGRES) as conn:
             with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+                cursor.execute('INSERT INTO public.error_log (error,fk_user_id) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
 
 # ??        
-@app.route('/user/getreviews', methods=['GET'])
+@app.route('/getreviews', methods=['GET'])
 def get_reviews():
-    if 'loggedin' in session and session['loggedin'] == True:
-        user_id = str(session['id'])
-        all_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
-        if all_reviews.status_code == 200:
-            all_reviews = all_reviews.json()
-            session['movies'] = all_reviews        
-            return render_template('home.html', reviews=all_reviews, account=session)
-    return redirect(url_for('login'))
+    try:
+        if 'loggedin' in session and session['loggedin'] == True:
+            user_id = str(session['id'])
+            user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
+            if user_reviews.status_code == 200:
+                user_reviews = user_reviews.json()
+                session['movies'] = user_reviews        
+                return render_template('home.html', reviews=user_reviews, account=session)
+        return redirect(url_for('login'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute('INSERT INTO public.error_log (error, ) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
 
 
 # Search for a specific movie, calls microservice_neo to retreive all movies related to the input of the user
@@ -87,8 +96,10 @@ def recommendations():
     for movie in session['movies']:
         movies.append(movie['name'])
     recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies})
+    
     if recommended_movies.status_code == 200:
         recommended_movies = recommended_movies.json()
+        print(recommended_movies)
         return render_template('recommendations.html', recommendations=recommended_movies, account=session)
     return redirect(url_for('get_reviews'))
 
