@@ -1,0 +1,32 @@
+{% extends 'layout_admin.html' %}
+
+{% block title %}Admin{% endblock %}
+<!-- action="{{ url_for('modify_user') }}" -->
+{% block content %}
+<form action="{{ url_for('modify_user')}}" method="post">
+    <b><label for="movie">Pick the user for update</label></b>
+    <br>
+    <div id="movies">
+        {% for user in users %}
+        <p><i>User id: {{user['id']}}</i></p>
+        <p><i>User email: {{user['email']}}</i></p>
+        <p><i>User name: {{user['name']}}</i></p>
+        <p><i>User role: {{user['role']}}</i></p>
+        <p>
+            <input id="degree-1" name="user_id" required type="radio" value="{{user['id']}}">
+            <label for="degree-1">Select</label>
+        </p>
+        <hr>
+        {% endfor %}
+    </div>
+    <p>
+        <b><label for="update_user">Update user email</label></b>
+    </p>
+    <p>
+        <input type="email" name="new_email" placeholder="new email" required></input>
+    </p>
+     
+    <button type="submit">Submit</button>
+</form>
+
+{% endblock %}
