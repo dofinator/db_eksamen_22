@@ -124,3 +124,15 @@ text-align: center;
 .site-header a { 
 color:#fff;
 }
+
+#review{
+   overflow: auto;
+   max-height: 30vh;
+   border:1px solid black;
+  }
+
+#movies{
+overflow: auto;
+max-height: 30vh;
+border:1px solid black;
+}

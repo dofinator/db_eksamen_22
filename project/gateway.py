@@ -28,12 +28,12 @@ def home():
         error = traceback.format_exc()
         with get_connection_postgres(CONNECTION_POSTGRES) as conn:
             with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error,fk_user_id) values (%s)', [error])
+                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
 
 # ??        
-@app.route('/getreviews', methods=['GET'])
+@app.route('/reviews', methods=['GET'])
 def get_reviews():
     try:
         if 'loggedin' in session and session['loggedin'] == True:
@@ -42,7 +42,7 @@ def get_reviews():
             if user_reviews.status_code == 200:
                 user_reviews = user_reviews.json()
                 session['movies'] = user_reviews        
-                return render_template('home.html', reviews=user_reviews, account=session)
+                return render_template('reviews.html', reviews=user_reviews, account=session)
         return redirect(url_for('login'))
     except:
         traceback.print_exc()
@@ -55,18 +55,23 @@ def get_reviews():
 
 
 # Search for a specific movie, calls microservice_neo to retreive all movies related to the input of the user
-@app.route('/searchmovie', methods=['POST'])
+@app.route('/reviews', methods=['POST'])
 def search_movie():
     if 'loggedin' in session and session['loggedin'] == True:
         if request.method=='POST' and 'movie' in request.form:
+            user_id = session['id']
             movie = request.form.get("movie")
             searched_movies = requests.get('http://127.0.0.1:5001/getmovies/'+ movie)
-            if searched_movies.status_code == 200:
+            user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
+            if searched_movies.status_code == 200 and user_reviews.status_code == 200:
                 searched_movies = searched_movies.json()
-                return render_template('home.html', movies=searched_movies, account=session)
+                user_reviews = user_reviews.json()
+                return render_template('reviews.html', movies=searched_movies, account=session, reviews=user_reviews)
             else:
-                return redirect('home')
+                flash('To search for a movie you need to enter a movie name')
+                return redirect(url_for('get_reviews'))
         else:
+            print('*****************')
             return redirect('home')
     else:
         return redirect(url_for('login'))
@@ -74,12 +79,15 @@ def search_movie():
 @app.route('/writereview', methods=['GET', 'POST'])
 def write_review():
     if 'loggedin' in session and session['loggedin'] == True:
-        if request.method=='POST' and 'rating' in request.form:
+        if request.method=='POST' and 'rating' in request.form and 'movie_name' in request.form and 'review_text' in request.form:
             id = session['id']
             review = request.form['review_text']
             movie_name = request.form['movie_name']
             rating = request.form['rating']
             requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
+            return redirect(url_for('get_reviews'))
+        else:
+            flash('Missing fields in movie review')
             return redirect(url_for('get_reviews'))
     else:
         return redirect(url_for('login'))
@@ -90,23 +98,27 @@ def delete_review(id, user_id):
     requests.get(f'http://127.0.0.1:5002/delete/{id}/{user_id}')
     return redirect(url_for('get_reviews'))
 
-@app.route('/user/recommendations/', methods=['GET'])
+@app.route('/recommendations', methods=['GET'])
 def recommendations():
-    movies = []
-    for movie in session['movies']:
-        movies.append(movie['name'])
-    recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies})
-    
-    if recommended_movies.status_code == 200:
-        recommended_movies = recommended_movies.json()
-        print(recommended_movies)
-        return render_template('recommendations.html', recommendations=recommended_movies, account=session)
-    return redirect(url_for('get_reviews'))
-
+    if 'loggedin' in session and session['loggedin'] == True:
+        movies = []
+        for movie in session['movies']:
+            movies.append(movie['name'])
+        recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies})
+        
+        if recommended_movies.status_code == 200:
+            recommended_movies = recommended_movies.json()
+            print(recommended_movies)
+            return render_template('recommendations.html', recommendations=recommended_movies, account=session)
+        return redirect(url_for('get_reviews'))
+    else:
+        return redirect(url_for('login'))
 # Logs in the user
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     try:
+        if 'loggedin' in session and session['loggedin'] == True:
+            return redirect(url_for('home'))
         # Check if "username" and "password" POST requests exist (user submitted form)
         if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
             password = request.form['password']
@@ -136,7 +148,7 @@ def login():
                     session['name'] = user_name
                     session['email'] = user_email
                     #Redirect to home page
-                    return redirect(url_for('home'))
+                    return redirect(url_for('get_reviews'))
                 else:
                     # Account doesnt exist or username/password incorrect
                     flash('Incorrect username/password')
@@ -159,7 +171,7 @@ def register():
     try:
         if 'loggedin' in session and session['loggedin'] == True:
             flash('You cannot register a new user when u are logged in')
-            return render_template('profile.html', account=session)
+            return redirect(url_for('get_review'))
         # Check if "username", "password" and "email" POST requests exist (user submitted form)
         if request.method == 'POST' and 'name' in request.form and 'password' in request.form and 'email' in request.form:
             name = request.form['name']
@@ -175,7 +187,7 @@ def register():
             _hashed_password = generate_password_hash(password)
     
             #Check if account exists
-        
+
             with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('SELECT * FROM users WHERE email = %s', [email])
@@ -227,32 +239,6 @@ def logout():
             with conn.cursor() as cursor:
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         return redirect(url_for('login'))
-  
-@app.route('/profile')
-def profile(): 
-    # Check if user is loggedin
-    try:
-        if 'loggedin' in session and session['loggedin'] == True:
-            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute('SELECT * FROM users WHERE id = %s', [session['id']])
-                    results = cursor.fetchone()
-                    account = {}
-                    account['name'] = results[3]
-                    account['email'] = results[1]
-            # Show the profile page with account info
-            return render_template('profile.html', account=account)
-        # User is not loggedin redirect to login page
-        return redirect(url_for('login'))
-    except:
-        traceback.print_exc()
-        error = traceback.format_exc()
-        user_id = session['id']
-        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-                with conn.cursor() as cursor:
-                    cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
-        flash('Looks like something went wrong and u have been logged out')
-        return render_template('login.html')
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
