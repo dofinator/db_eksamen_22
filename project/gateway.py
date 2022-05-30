@@ -12,13 +12,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = SECRET
+api_key = "somethingElseInProduction"
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=60)
 
- 
+# when just entering the url without routes its redirects based on the current session
 @app.route('/')
 def home():
     try:
-        # checks when accessiong /home is the user is already logged in
+        # checks when accessiong / is the user is already logged in
         if 'loggedin' in session and session['loggedin'] == True:
             return redirect(url_for('get_reviews'))
         else:
@@ -26,19 +27,24 @@ def home():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
 
-# ??        
+# Gets the users reviews and renders the review page   
 @app.route('/reviews', methods=['GET'])
 def get_reviews():
     try:
         if 'loggedin' in session and session['loggedin'] == True:
             user_id = str(session['id'])
-            user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
+            user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}', headers={"X-Api-Key":api_key})
             if user_reviews.status_code == 200:
                 user_reviews = user_reviews.json()
                 session['movies'] = user_reviews        
@@ -47,9 +53,14 @@ def get_reviews():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
 
@@ -57,64 +68,123 @@ def get_reviews():
 # Search for a specific movie, calls microservice_neo to retreive all movies related to the input of the user
 @app.route('/reviews', methods=['POST'])
 def search_movie():
-    if 'loggedin' in session and session['loggedin'] == True:
-        if request.method=='POST' and 'movie' in request.form:
-            user_id = session['id']
-            movie = request.form.get("movie")
-            searched_movies = requests.get('http://127.0.0.1:5001/getmovies/'+ movie)
-            user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
-  
-            if searched_movies.status_code == 200 and user_reviews.status_code == 200:
-                searched_movies = searched_movies.json()
-                user_reviews = user_reviews.json()             
-                return render_template('reviews.html', movies=searched_movies, account=session, reviews=user_reviews)
+    try:
+        if 'loggedin' in session and session['loggedin'] == True:
+            if request.method=='POST' and 'movie' in request.form:
+                user_id = session['id']
+                movie = request.form.get("movie")
+                searched_movies = requests.get(f'http://127.0.0.1:5001/getmovies/{movie}', headers={"X-Api-Key":api_key})
+                user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}', headers={"X-Api-Key":api_key})
+    
+                if searched_movies.status_code == 200 and user_reviews.status_code == 200:
+                    searched_movies = searched_movies.json()
+                    user_reviews = user_reviews.json()             
+                    return render_template('reviews.html', movies=searched_movies, account=session, reviews=user_reviews)
+                else:
+                    flash('To search for a movie you need to enter a movie name')
+                    return redirect(url_for('get_reviews'))
             else:
-                flash('To search for a movie you need to enter a movie name')
-                return redirect(url_for('get_reviews'))
+                print('*****************')
+                return redirect('home')
         else:
-            print('*****************')
-            return redirect('home')
-    else:
-        return redirect(url_for('login'))
-# 
+            return redirect(url_for('login'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
+
+# Writes a review on a choosen movie
 @app.route('/writereview', methods=['GET', 'POST'])
 def write_review():
-    if 'loggedin' in session and session['loggedin'] == True:
-        if request.method=='POST' and 'rating' in request.form and 'movie_name' in request.form and 'review_text' in request.form:
-            id = session['id']
-            review = request.form['review_text']
-            movie_name = request.form['movie_name']
-            rating = request.form['rating']
-            requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
-            requests.post('http://127.0.0.1:5001/setmovierating', json={"id": id,"movie_name": movie_name, "rating": rating})
-            return redirect(url_for('get_reviews'))
+    try:
+        if 'loggedin' in session and session['loggedin'] == True:
+            if request.method=='POST' and 'rating' in request.form and 'movie_name' in request.form and 'review_text' in request.form:
+                id = session['id']
+                review = request.form['review_text']
+                movie_name = request.form['movie_name']
+                rating = request.form['rating']
+                requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating}, headers={"X-Api-Key":api_key})
+                requests.post('http://127.0.0.1:5001/setmovierating', json={"id": id,"movie_name": movie_name, "rating": rating}, headers={"X-Api-Key":api_key})
+                return redirect(url_for('get_reviews'))
+            else:
+                flash('Missing fields in movie review')
+                return redirect(url_for('get_reviews'))
         else:
-            flash('Missing fields in movie review')
-            return redirect(url_for('get_reviews'))
-    else:
-        return redirect(url_for('login'))
+            return redirect(url_for('login'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
 
+# Deletes a review
 @app.route('/deletereview/<id>/<user_id>', methods=['GET', 'POST'])
 def delete_review(id, user_id):
-    user_id = str(session['id'])
-    requests.get(f'http://127.0.0.1:5002/delete/{id}/{user_id}')
-    return redirect(url_for('get_reviews'))
+    try:
+        user_id = str(session['id'])
+        requests.get(f'http://127.0.0.1:5002/delete/{id}/{user_id}', headers={"X-Api-Key":api_key})
+        return redirect(url_for('get_reviews'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
 
+# Gets the movie recommendations based on the users current reviews
 @app.route('/recommendations', methods=['GET'])
 def recommendations():
-    if 'loggedin' in session and session['loggedin'] == True:
-        movies = []
-        for movie in session['movies']:
-            movies.append(movie['name'])
-        recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies})
-        
-        if recommended_movies.status_code == 200:
-            recommended_movies = recommended_movies.json()
-            print(recommended_movies)
-            return render_template('recommendations.html', recommendations=recommended_movies, account=session)
-        return redirect(url_for('get_reviews'))
-    else:
-        return redirect(url_for('login'))
+    try:
+        if 'loggedin' in session and session['loggedin'] == True:
+            movies = []
+            for movie in session['movies']:
+                movies.append(movie['name'])
+            recommended_movies = requests.get('http://127.0.0.1:5001/movies/recommendations', json={'movies': movies}, headers={"X-Api-Key":api_key})
+            
+            if recommended_movies.status_code == 200:
+                recommended_movies = recommended_movies.json()
+                print(recommended_movies)
+                return render_template('recommendations.html', recommendations=recommended_movies, account=session)
+            return redirect(url_for('get_reviews'))
+        else:
+            return redirect(url_for('login'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
 
 # Logs in the user
 @app.route('/login', methods=['GET', 'POST'])
@@ -163,13 +233,18 @@ def login():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
-        return render_template('login.html')
+        return redirect(url_for('logout'))
 
-
+# Registers the user 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     try:
@@ -191,7 +266,6 @@ def register():
             _hashed_password = generate_password_hash(password)
     
             #Check if account exists
-
             with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
                     cursor.execute('SELECT * FROM users WHERE email = %s', [email])
@@ -212,7 +286,7 @@ def register():
                     with conn.cursor() as cursor:
                         cursor.execute("INSERT INTO users (name, password, email) VALUES (%s,%s,%s)", (name, _hashed_password, email))
                 flash('You have successfully registered!')
-        # empty filed in register from
+        # empty field in register from
         elif request.method == 'POST':
             flash('Please fill out the form!')
         # Show registration form with message (if any)
@@ -220,11 +294,16 @@ def register():
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
-        return render_template('register.html')
+        return redirect(url_for('logout'))
 
 @app.route('/logout')
 def logout():
@@ -244,6 +323,7 @@ def logout():
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         return redirect(url_for('login'))
 
+# Admin route, rendes admin.html and gets all the users
 @app.route('/admin')
 def admin():
     try:
@@ -265,32 +345,51 @@ def admin():
             return render_template('admin.html', users=users_list)
         else:
             flash('No autherization')
-            return redirect(url_for('get_reviews'))
-        
+            return redirect(url_for('get_reviews')) 
     except:
         traceback.print_exc()
         error = traceback.format_exc()
-        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-            with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
-        return redirect(url_for('login'))
-
-@app.route('/admin', methods=['POST'])
-def modify_user():
-    if 'loggedin' in session and session['loggedin'] == True and session['role'] == 'admin':
-        if request.method=='POST':
-            new_email = request.form['new_email']
-            user_id = request.form["user_id"]
+        if 'id' in session and session['id']:
             with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute('update users set email = %s where id = %s',[new_email,user_id])
-            return redirect(url_for('admin'))
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
         else:
-            flash('Missing fields in movie review')
-            return redirect(url_for('get_reviews'))
-    else:
-        return redirect(url_for('login'))
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
 
+# An admin has the ability to change the users email
+@app.route('/admin', methods=['POST'])
+def modify_user():
+    try:
+        if 'loggedin' in session and session['loggedin'] == True and session['role'] == 'admin':
+            if request.method=='POST':
+                new_email = request.form['new_email']
+                user_id = request.form["user_id"]
+                with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute('update users set email = %s where id = %s',[new_email,user_id])
+                return redirect(url_for('admin'))
+            else:
+                flash('Missing fields in movie review')
+                return redirect(url_for('get_reviews'))
+        else:
+            return redirect(url_for('login'))
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        if 'id' in session and session['id']:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error, fk_user_id) values (%s, %s)', [error,session['id']])
+        else:
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        flash('Looks like something went wrong')
+        return redirect(url_for('logout'))
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

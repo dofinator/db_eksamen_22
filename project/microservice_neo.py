@@ -1,3 +1,4 @@
+import json
 from flask import Flask, jsonify, render_template, request
 from pymongo import MongoClient
 from settings import NEO4J_DATABASE, NEO4J_PASSWORD, NEO4J_URI, NEO4J_USER
@@ -15,7 +16,9 @@ driver = GraphDatabase.driver(NEO4J_URI, auth=basic_auth(NEO4J_USER, NEO4J_PASSW
 
 @app.route('/movies/recommendations', methods=(['GET']))
 def index():
-    try:
+    headers = request.headers
+    auth = headers.get('X-Api-Key')
+    if auth == 'somethingElseInProduction':
         movies = request.get_json()
         recommended_movies = {}
         with driver.session() as neodb:
@@ -31,40 +34,41 @@ def index():
                     recommended_list.append(recommendation[0])
                 recommended_movies[movie] = recommended_list
         return recommended_movies
-
-    except:
-        # traceback.print_exc()
-        # error = traceback.format_exc()
-        # with get_connection_postgres(CONNECTION_POSTGRES) as conn:
-        #         with conn.cursor() as cursor:
-        #             cursor.execute('INSERT INTO public.error_log (fk_user_id,error) values (%s,%s)', [user_id,error])
-        # flash('Looks like something went wrong')
-        return render_template('login.html')
+    else: return jsonify("some status code")
 
 @app.route('/getmovies/<movie>', methods=('GET', 'POST'))
 def get_movies_search(movie):
-    all_movies = []
-    session = driver.session()
-    for record in session.run("MATCH (m:Movie) WHERE toLower(m.title) CONTAINS toLower($title) RETURN m.title", {"title": movie}):
-        all_movies.append(record["m.title"])
-    return jsonify(all_movies)
+    headers = request.headers
+    auth = headers.get('X-Api-Key')
+    if auth == 'somethingElseInProduction':
+        all_movies = []
+        session = driver.session()
+        for record in session.run("MATCH (m:Movie) WHERE toLower(m.title) CONTAINS toLower($title) RETURN m.title", {"title": movie}):
+            all_movies.append(record["m.title"])
+        return jsonify(all_movies)
+    else: return jsonify("some status code")
 
 @app.route('/setmovierating', methods=('GET', 'POST'))
 def set_movie_rating():
-    review = request.get_json()
-    session = driver.session()
-    if review['rating'] == "Disliked":
+    headers = request.headers
+    auth = headers.get('X-Api-Key')
+    if auth == 'somethingElseInProduction':
+        review = request.get_json()
+        session = driver.session()
+        if review['rating'] == "Disliked":
+            session.run("MERGE(u:User{id:$id}) "
+                    "MERGE(m:Movie{title:$title}) "
+                    "MERGE(u)-[:DISLIKED]->(m) "
+                    "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
+
         session.run("MERGE(u:User{id:$id}) "
-                "MERGE(m:Movie{title:$title}) "
-                "MERGE(u)-[:Disliked]->(m) "
-                "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
-
-    session.run("MERGE(u:User{id:$id}) "
-                "MERGE(m:Movie{title:$title}) "
-                "MERGE(u)-[:LIKES]->(m) "
-                "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
-    return "200"
-
+                    "MERGE(m:Movie{title:$title}) "
+                    "MERGE(u)-[:LIKED]->(m) "
+                    "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
+        return "200"
+    else: return jsonify("some status code")
+    
+## not done
 @app.route('/otheruserreviews', methods=('GET', 'POST'))
 def get_other_user_reviews():
     session = driver.session()
