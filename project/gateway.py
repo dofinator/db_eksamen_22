@@ -49,7 +49,7 @@ def get_reviews():
         error = traceback.format_exc()
         with get_connection_postgres(CONNECTION_POSTGRES) as conn:
             with conn.cursor() as cursor:
-                cursor.execute('INSERT INTO public.error_log (error, ) values (%s)', [error])
+                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         flash('Looks like something went wrong')
         return redirect(url_for('logout'))
 
@@ -113,6 +113,7 @@ def recommendations():
         return redirect(url_for('get_reviews'))
     else:
         return redirect(url_for('login'))
+
 # Logs in the user
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -127,7 +128,7 @@ def login():
             try:
                 with get_connection_postgres(CONNECTION_POSTGRES) as conn:
                     with conn.cursor() as cursor:
-                        cursor.execute('SELECT id,email,password,name FROM users WHERE email = %s', [email])
+                        cursor.execute('SELECT id,email,password,name,role FROM users WHERE email = %s', [email])
                 # Fetch one record and return result
                         account = cursor.fetchone()
             except:
@@ -139,7 +140,7 @@ def login():
                 flash('Looks like something went wrong')
                 return render_template('login.html')
             if account:
-                user_id, user_email, user_password_rs, user_name = account
+                user_id, user_email, user_password_rs, user_name, role = account
                 # If account exists in users table in out database
                 if check_password_hash(user_password_rs, password):
                     # Create session data, we can access this data in other routes
@@ -147,6 +148,7 @@ def login():
                     session['id'] = user_id
                     session['name'] = user_name
                     session['email'] = user_email
+                    session['role'] = role
                     #Redirect to home page
                     return redirect(url_for('get_reviews'))
                 else:
@@ -239,6 +241,54 @@ def logout():
             with conn.cursor() as cursor:
                 cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
         return redirect(url_for('login'))
+
+@app.route('/admin')
+def admin():
+    try:
+        if 'loggedin' in session and session['loggedin'] == True and session['role'] == 'admin':
+            users_list = []
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('select * from public.users where not admin_is_allowed')
+                    users = cursor.fetchall()
+                    for user in users:
+                        user_dict = {}
+                        user_dict['id'] = user[0]
+                        user_dict['email'] = user[1]
+                        user_dict['password'] = user[2]
+                        user_dict['name'] = user[3]
+                        user_dict['role'] = user[4]
+                        user_dict['admin_is_allowed'] = user[5]
+                        users_list.append(user_dict)
+            return render_template('admin.html', users=users_list)
+        else:
+            flash('No autherization')
+            return redirect(url_for('get_reviews'))
+        
+    except:
+        traceback.print_exc()
+        error = traceback.format_exc()
+        with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute('INSERT INTO public.error_log (error) values (%s)', [error])
+        return redirect(url_for('login'))
+
+@app.route('/admin', methods=['POST'])
+def modify_user():
+    if 'loggedin' in session and session['loggedin'] == True and session['role'] == 'admin':
+        if request.method=='POST':
+            new_email = request.form['new_email']
+            user_id = request.form["user_id"]
+            with get_connection_postgres(CONNECTION_POSTGRES) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute('update users set email = %s where id = %s',[new_email,user_id])
+            return redirect(url_for('admin'))
+        else:
+            flash('Missing fields in movie review')
+            return redirect(url_for('get_reviews'))
+    else:
+        return redirect(url_for('login'))
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
