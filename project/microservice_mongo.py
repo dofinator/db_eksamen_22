@@ -54,7 +54,6 @@ def get_reviews(user_id):
 
 @app.route('/delete/<id>/<user_id>')
 def delete(id, user_id):
-    print(id, "-----", user_id)
     data = []
     reviews.delete_one({"_id": ObjectId(id)})
     all_reviews = [doc for doc in reviews.find({"user_id": int(user_id)})]

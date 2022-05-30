@@ -63,9 +63,10 @@ def search_movie():
             movie = request.form.get("movie")
             searched_movies = requests.get('http://127.0.0.1:5001/getmovies/'+ movie)
             user_reviews = requests.get(f'http://127.0.0.1:5002/user/getreviews/{user_id}')
+  
             if searched_movies.status_code == 200 and user_reviews.status_code == 200:
                 searched_movies = searched_movies.json()
-                user_reviews = user_reviews.json()
+                user_reviews = user_reviews.json()             
                 return render_template('reviews.html', movies=searched_movies, account=session, reviews=user_reviews)
             else:
                 flash('To search for a movie you need to enter a movie name')
@@ -85,6 +86,7 @@ def write_review():
             movie_name = request.form['movie_name']
             rating = request.form['rating']
             requests.post('http://127.0.0.1:5002/writereview', json={"id": id,"review": review, "movie_name": movie_name, "rating": rating})
+            requests.post('http://127.0.0.1:5001/setmovierating', json={"id": id,"movie_name": movie_name, "rating": rating})
             return redirect(url_for('get_reviews'))
         else:
             flash('Missing fields in movie review')

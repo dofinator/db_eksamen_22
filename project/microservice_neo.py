@@ -49,7 +49,29 @@ def get_movies_search(movie):
         all_movies.append(record["m.title"])
     return jsonify(all_movies)
 
+@app.route('/setmovierating', methods=('GET', 'POST'))
+def set_movie_rating():
+    review = request.get_json()
+    session = driver.session()
+    if review['rating'] == "Disliked":
+        session.run("MERGE(u:User{id:$id}) "
+                "MERGE(m:Movie{title:$title}) "
+                "MERGE(u)-[:Disliked]->(m) "
+                "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
 
+    session.run("MERGE(u:User{id:$id}) "
+                "MERGE(m:Movie{title:$title}) "
+                "MERGE(u)-[:LIKES]->(m) "
+                "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
+    return "200"
+
+@app.route('/otheruserreviews', methods=('GET', 'POST'))
+def get_other_user_reviews():
+    session = driver.session()
+    test = session.run("match (u:User)-[r:LIKES]->(m:Movie) return u.id, m.title",)
+    for r in test:
+        print(r)
+    return "200"
 if __name__ == "__main__":
     app.run(debug=True, port=5001)
 

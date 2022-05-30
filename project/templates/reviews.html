@@ -12,15 +12,15 @@
         <p>
             <b><label for="movie">Search for a movie</label></b>
         </p>
-        
+
         <p>
             <input type="text" name="movie" placeholder="Enter movie name" required></input>
         </p>
         <div class="form-group ">
-        <input type="submit" value="search" class="form-control btn btn-primary " name="search">
-    </div>
+            <input type="submit" value="search" class="form-control btn btn-primary " name="search">
+        </div>
 
-    
+
 </form>
 
 
@@ -42,7 +42,7 @@
     <p>
         <input type="text" name="review_text" placeholder="Write your comment" required></input>
     </p>
- 
+
     <div>
         <p>
             <input id="degree-0" name="rating" required type="radio" value="Liked">
@@ -53,7 +53,7 @@
             <label for="degree-1">Disliked</label>
         </p>
     </div>
-    
+
     <button type="submit">Submit</button>
 </form>
 
@@ -61,18 +61,24 @@
 
 <b><label for="review">Your reviews</label></b>
 <div id="review" class="review">
-    
+
     {% for review in reviews %}
     <div style="display: flex;">
-        <b><p>Title: </p></b>
+        <b>
+            <p>Title: </p>
+        </b>
         <p>{{ review['name']}}</p>
     </div>
     <div style="display: flex;">
-        <b><p>Comment: </p></b>
+        <b>
+            <p>Comment: </p>
+        </b>
         <p>{{ review['review'] }}</p>
     </div>
     <div style="display: flex;">
-        <b><p>Rating: </p></b>
+        <b>
+            <p>Rating: </p>
+        </b>
         <p>{{ review['rating']}}</p>
     </div>
     <form method="DELETE" action="{{ url_for('delete_review', id=review['_id'], user_id = account['id']) }}">
@@ -82,6 +88,10 @@
     <hr>
     {% endfor %}
 
+</div>
+<div id="review" class="review">
+    {% for review in all_reviews %}
+    <p>{{ review['name']}}</p>
 </div>
 
 
