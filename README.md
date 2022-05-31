@@ -49,10 +49,12 @@ Run following cypher. This step will take about 5-6 minutes since the csv file c
 
 Meanwhile finish the rest of the README.md file
 
-`USING PERIODIC COMMIT 1000
+```bash
+USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM "file:///movies.csv" AS line  
 MERGE (m:Movie{ id:line.movieId, title:line.title})   
-FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g));`
+FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g));
+```
 
 ## Setup Postgres
 
