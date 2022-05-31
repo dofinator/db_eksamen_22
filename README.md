@@ -47,6 +47,8 @@ Enter the username: neo4j & password: password
 
 Run following cypher. This step will take about 5-6 minutes since the csv file contains 30.000 rows
 
+Meanwhile finish the rest of the README.md file
+
 `USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM "file:///movies.csv" AS line  
 MERGE (m:Movie{ id:line.movieId, title:line.title})   
@@ -87,4 +89,6 @@ Run the following script:
 ```bash
 start_servers.sh
 ```
+Check to see if the neo4j cypher has finished running
+
 ## Acces client at http://localhost:5000/
