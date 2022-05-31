@@ -9,6 +9,7 @@ The code editor used for this project is Visual Studio Code
 
 Username and password for the different databases are located in settings.py
 
+Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used for the databases ins this project
 ## Usage
 
 **Run the script *docker-compose-all.sh* to start all docker containers:**
@@ -23,6 +24,9 @@ Username and password for the different databases are located in settings.py
 source venv/Scripts/activate
 ```
 ## Setup Neo4j
+Create a new connection in Neo4j Deskop with the login information from the [settings.py](https://github.com/dofinator/db_eksamen_22/blob/master/project/settings.py)
+using port 7687
+
 Run the following query in your local Neo4j desktop application: 
 
 This step will take about 5-6 minutes since the csv file contains 30.000 rows
