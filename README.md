@@ -1,5 +1,7 @@
 # Movie recommendation project
-asdkjfasdfa......
+Database Exam Project
+Christoffer Wegner
+Sumit Dey
 
 ## Usage
 Run the following command to activate the virtual environment where the requirements are installed.
