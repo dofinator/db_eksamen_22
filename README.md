@@ -77,8 +77,8 @@ Copy the content of [sql](https://github.com/dofinator/db_eksamen_22/blob/master
 ### Test users
 | Email     | Password | Role |
 | ----------- | ----------- | ----------- 
-| admin@admin.dk      | 1234       | admin |
-| user@user.dk   | 1234       | user |
+| admin@admin.com      | 1234       | admin |
+| user@user.com   | 1234       | user |
 
 
 ## Start the API's
