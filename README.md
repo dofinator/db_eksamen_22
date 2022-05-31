@@ -19,7 +19,10 @@ Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used
 ```
 
 
-**Run the following command to activate the virtual environment where the requirements are installed: Use the git bash terminal to execute the command in the terminal in Visual Studio Code**
+**Run the following command to activate the virtual environment where the requirements are installed: 
+
+***Use the git bash terminal to execute the command in the terminal in Visual Studio Code***
+
 ```bash
 source venv/Scripts/activate
 ```
