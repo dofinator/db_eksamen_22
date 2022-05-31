@@ -34,7 +34,7 @@ Run the following query in your local Neo4j desktop application:
 
 This step will take about 5-6 minutes since the csv file contains 30.000 rows
 
-`:auto USING PERIODIC COMMIT 10000
+`:auto USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM "file:///movies.csv" AS line  
 MERGE (m:Movie{ id:line.movieId, title:line.title})   
 FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g) )`
