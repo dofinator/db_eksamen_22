@@ -84,7 +84,7 @@ Copy the content of [sql](https://github.com/dofinator/db_eksamen_22/blob/master
 
 
 ## Start the API's
-Run the following script:
+Run the following script from the root of the project:
 
 ```bash
 start_servers.sh
