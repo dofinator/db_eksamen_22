@@ -18,19 +18,26 @@ Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used
 ./docker-compose-all.sh
 ```
 
-
-## Run the following command in the root of the project to install requirements ##
-
+Run the following command in the root of the project to install requirements 
 
 ```bash
 pip install -r requirements.txt
 ```
 
 ## Setup Neo4j
-Create a new connection in Neo4j Deskop with the login information from the [settings.py](https://github.com/dofinator/db_eksamen_22/blob/master/project/settings.py)
-using port 7687
 
-Run the following query in your local Neo4j desktop application: 
+Run the following command to get the container id of the Neo4j docker container
+```bash
+docker ps
+```
+
+With the neo4j container id run the following command:
+
+On windows use winpty
+
+```bash
+winpty winpty docker exec -it <CONTAINER ID> bash
+```
 
 This step will take about 5-6 minutes since the csv file contains 30.000 rows
 
