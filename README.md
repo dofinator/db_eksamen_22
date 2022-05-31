@@ -82,17 +82,9 @@ Copy the content of [sql](https://github.com/dofinator/db_eksamen_22/blob/master
 
 
 ## Start the API's
-Run the following commands in the terminal from the project folder:
+Run the following script:
 
 ```bash
-python gateway.py
-```
-
-```bash
-python microservice_mongo.py
-```
-
-```bash
-python microservice_neo.py
+start_servers.sh
 ```
 ## Acces client at http://localhost:5000/
