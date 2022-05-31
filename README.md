@@ -9,8 +9,6 @@
 
 **Run the script *docker-compose-all.sh* to start all docker containers:**
 
-In terminal type the following command
-
 ```bash
 ./docker-compose-all.sh
 ```
@@ -20,21 +18,24 @@ In terminal type the following command
 ```bash
 source venv/Scripts/activate
 ```
+## Setup Neo4j
+Run the following query in your local Neo4j desktop application: 
+
+This step will take about 5-6 minutes since the csv file contains 30.000 rows
+
+`:auto USING PERIODIC COMMIT 10000
+LOAD CSV WITH HEADERS FROM "file:///movies.csv" AS line  
+MERGE (m:Movie{ id:line.movieId, title:line.title})   
+FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g) )`
 
 ## Setup Postgres
-Run the following [sql](https://github.com/dofinator/db_eksamen_2022/blob/master/create_tables.sql) file in your local postgres to setup some test users.
+Run the following [sql](https://github.com/dofinator/db_eksamen_2022/blob/master/create_tables.sql) file in your local postgres, to setup some test users.
 ### Test users
 | Email     | Password | Role |
 | ----------- | ----------- | ----------- 
 | admin@admin.dk      | 1234       | admin |
 | user@user.dk   | 1234       | user |
 
-## Setup MongoDB
 
-## Setup Neo4j
-To run Neo4j locally setup these variables in reviews.py and neo.py to let the application know where to connect to the database.
-```bash
-NEO4J_URI=neo4j://localhost:7687 NEO4J_DATABASE=neo4j NEO4J_USER="<username>" NEO4J_PASSWORD="<password>" python movies.py
-```
-
-## Setup Redis
+## Start the API's
+Run 
