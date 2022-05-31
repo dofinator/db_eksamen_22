@@ -58,7 +58,7 @@ FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (
 
 ## Setup Postgres
 
-Run the following command to get the container id of the postgres docker container
+Run the following command in a new terminal to get the container id of the postgres docker container
 ```bash
 docker ps
 ```
