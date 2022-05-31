@@ -31,7 +31,7 @@ Run the following command to get the container id of the Neo4j docker container
 docker ps
 ```
 
-With the neo4j container id run the following commands to acces the neo4j-shell:
+With the neo4j container id run the following commands to acces the neo4j container:
 
 (On windows use winpty)
 
@@ -53,7 +53,27 @@ MERGE (m:Movie{ id:line.movieId, title:line.title})
 FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g) )`
 
 ## Setup Postgres
-Run the following [sql](https://github.com/dofinator/db_eksamen_22/blob/master/create_tables.sql) file in your local postgres, to setup some test users.
+
+Run the following command to get the container id of the postgres docker container
+```bash
+docker ps
+```
+
+With the postgres container id run the following commands to acces the postgress container:
+
+(On windows use winpty)
+
+```bash
+winpty docker exec -it <CONTAINER ID> bash
+```
+
+Run the following command
+```bash
+psql -h localhost -U postgres
+```
+Copy the content of [sql](https://github.com/dofinator/db_eksamen_22/blob/master/create_tables.sql) to your clipboard and paste it in the postgres-cli and press enter
+
+
 ### Test users
 | Email     | Password | Role |
 | ----------- | ----------- | ----------- 
