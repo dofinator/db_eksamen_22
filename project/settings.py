@@ -14,6 +14,8 @@ NEO4J_DATABASE="neo4j"
 NEO4J_USER="neo4j" 
 NEO4J_PASSWORD="password"
 
+# LOGIN INFORMATION FOR DATABASES
+
 # Neo4j
 # user: neo4j
 # password : password

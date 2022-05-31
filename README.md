@@ -9,9 +9,10 @@ The code editor used for this project is Visual Studio Code
 
 Username and password for the different databases are located in settings.py
 
+Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used for the databases ins this project
 ## Usage
 
-**Run the script *docker-compose-all.sh* to start all docker containers:**
+### Run the script *docker-compose-all.sh* to start all docker containers: ###
 
 ```bash
 ./docker-compose-all.sh
@@ -19,21 +20,27 @@ Username and password for the different databases are located in settings.py
 
 
 **Run the following command to activate the virtual environment where the requirements are installed:**
+
+***Use the integrated terminal (make sure to switch it to Gitbash) to execute the command in Visual Studio Code***
+
 ```bash
 source venv/Scripts/activate
 ```
 ## Setup Neo4j
+Create a new connection in Neo4j Deskop with the login information from the [settings.py](https://github.com/dofinator/db_eksamen_22/blob/master/project/settings.py)
+using port 7687
+
 Run the following query in your local Neo4j desktop application: 
 
 This step will take about 5-6 minutes since the csv file contains 30.000 rows
 
-`:auto USING PERIODIC COMMIT 10000
+`:auto USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM "file:///movies.csv" AS line  
 MERGE (m:Movie{ id:line.movieId, title:line.title})   
 FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g) )`
 
 ## Setup Postgres
-Run the following [sql](https://github.com/dofinator/db_eksamen_2022/blob/master/create_tables.sql) file in your local postgres, to setup some test users.
+Run the following [sql](https://github.com/dofinator/db_eksamen_22/blob/master/create_tables.sql) file in your local postgres, to setup some test users.
 ### Test users
 | Email     | Password | Role |
 | ----------- | ----------- | ----------- 
