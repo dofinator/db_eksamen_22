@@ -33,7 +33,7 @@ MERGE (m:Movie{ id:line.movieId, title:line.title})
 FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g) )`
 
 ## Setup Postgres
-Run the following [sql](https://github.com/dofinator/db_eksamen_2022/blob/master/create_tables.sql) file in your local postgres, to setup some test users.
+Run the following [sql](https://github.com/dofinator/db_eksamen_22/blob/master/create_tables.sql) file in your local postgres, to setup some test users.
 ### Test users
 | Email     | Password | Role |
 | ----------- | ----------- | ----------- 
