@@ -89,6 +89,6 @@ Run the following script:
 ```bash
 start_servers.sh
 ```
-Check to see if the neo4j cypher has finished running
+Check to see if the neo4j cypher has finished running before accessing the client
 
 ## Acces client at http://localhost:5000/
