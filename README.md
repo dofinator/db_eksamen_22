@@ -4,6 +4,10 @@
 * Sumit Dey, cph-sd152@cphbusiness.dk
 * Christoffer Ikizek Wegner, cph-cw109@cphbusiness.dk 
 
+## INFO
+The code editor used for this project is Visual Studio Code
+
+Username and password for the different databases are located in settings.py
 
 ## Usage
 
@@ -38,4 +42,17 @@ Run the following [sql](https://github.com/dofinator/db_eksamen_2022/blob/master
 
 
 ## Start the API's
-Run 
+Run the following commands in the terminal from the project folder:
+
+```bash
+python gateway.py
+```
+
+```bash
+python microservice_mongo.py
+```
+
+```bash
+python microservice_neo.py
+```
+## Acces client at http://localhost:5000/
