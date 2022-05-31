@@ -19,7 +19,7 @@ Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used
 ```
 
 
-**Run the following command to activate the virtual environment where the requirements are installed: 
+**Run the following command to activate the virtual environment where the requirements are installed: **
 
 ***Use the integrated terminal (make sure to switch it to Gitbash) to execute the command in Visual Studio Code***
 
