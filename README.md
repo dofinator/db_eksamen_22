@@ -6,7 +6,17 @@
 
 
 ## Usage
-Run the following command to activate the virtual environment where the requirements are installed.
+
+**Run the script *docker-compose-all.sh* to start all docker containers:**
+
+In terminal type the following command
+
+```bash
+./docker-compose-all.sh
+```
+
+
+**Run the following command to activate the virtual environment where the requirements are installed:**
 ```bash
 source venv/Scripts/activate
 ```
