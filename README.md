@@ -4,6 +4,8 @@
 * Sumit Dey, cph-sd152@cphbusiness.dk
 * Christoffer Ikizek Wegner, cph-cw109@cphbusiness.dk 
 
+## INFO
+Username and password for the different databases are located in settings.py
 
 ## Usage
 
