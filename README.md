@@ -31,17 +31,23 @@ Run the following command to get the container id of the Neo4j docker container
 docker ps
 ```
 
-With the neo4j container id run the following command:
+With the neo4j container id run the following commands to acces the neo4j-shell:
 
-On windows use winpty
+(On windows use winpty)
 
 ```bash
-winpty winpty docker exec -it <CONTAINER ID> bash
+winpty docker exec -it <CONTAINER ID> bash
 ```
 
-This step will take about 5-6 minutes since the csv file contains 30.000 rows
+```bash
+bin/cypher-shell
+```
 
-`:auto USING PERIODIC COMMIT 1000
+Enter the username: neo4j & password: password
+
+Run following cypher. This step will take about 5-6 minutes since the csv file contains 30.000 rows
+
+`USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM "file:///movies.csv" AS line  
 MERGE (m:Movie{ id:line.movieId, title:line.title})   
 FOREACH (gName in split(line.genres, '|') | MERGE (g:Genre {name:gName}) MERGE (m)-[:IS_GENRE]->(g) )`
