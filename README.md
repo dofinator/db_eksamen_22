@@ -38,4 +38,16 @@ Run the following [sql](https://github.com/dofinator/db_eksamen_2022/blob/master
 
 
 ## Start the API's
-Run 
+Run the following commands in the terminal from the project folder:
+
+```bash
+python gateway.py
+```
+
+```bash
+python microservice_mongo.py
+```
+
+```bash
+python microservice_neo.py
+```
