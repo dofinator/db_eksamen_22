@@ -6,6 +6,7 @@
 
 ## INFO
 The code editor used for this project is Visual Studio Code
+
 Username and password for the different databases are located in settings.py
 
 ## Usage
