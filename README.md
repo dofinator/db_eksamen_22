@@ -18,7 +18,7 @@ Username and password for the different databases are located in settings.py
 ```
 
 
-**Run the following command to activate the virtual environment where the requirements are installed:**
+**Run the following command to activate the virtual environment where the requirements are installed: Use the git bash terminal to execute the command in the terminal in Visual Studio Code**
 ```bash
 source venv/Scripts/activate
 ```
