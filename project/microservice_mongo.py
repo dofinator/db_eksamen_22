@@ -12,7 +12,7 @@ app = Flask(__name__)
 
 redis_cache = redis.Redis(host='localhost', port=6379)
 
-client = MongoClient('localhost', 27018, username='root',password='rootpassword')
+client = MongoClient('localhost', 27017, username='root',password='rootpassword')
 db = client.flask_db
 reviews = db.reviews
 movies = db.movies
