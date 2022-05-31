@@ -74,5 +74,6 @@ insert into public.roles (role) values ('admin');
 
 -- Insert admin
 insert into public.users (email,"password",name,role) values ('admin@admin.com','pbkdf2:sha256:260000$BF5lbo1SVwscE7BL$234537f55d246ae028b4a704c68189857ebabb7ae4b271e83232bd2c8b68b1fa','christoffer','admin');
+insert into public.users (email,"password",name,role) values ('user@user.com','pbkdf2:sha256:260000$BF5lbo1SVwscE7BL$234537f55d246ae028b4a704c68189857ebabb7ae4b271e83232bd2c8b68b1fa','sumit','user');
 
 commit;
