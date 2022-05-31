@@ -2,7 +2,7 @@
 asdkjfasdfa......
 
 ## Usage
-Run the following command to activate the virtuel enviroment where the requirements are installed.
+Run the following command to activate the virtual environment where the requirements are installed.
 ```bash
 source venv/Scripts/activate
 ```
