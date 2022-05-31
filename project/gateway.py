@@ -221,6 +221,8 @@ def login():
                     session['name'] = user_name
                     session['email'] = user_email
                     session['role'] = role
+                    if session['role'] == 'admin':
+                        return redirect(url_for('admin'))
                     #Redirect to home page
                     return redirect(url_for('get_reviews'))
                 else:

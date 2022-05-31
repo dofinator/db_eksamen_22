@@ -61,7 +61,8 @@ def set_movie_rating():
                     "MERGE(u)-[:DISLIKED]->(m) "
                     "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
 
-        session.run("MERGE(u:User{id:$id}) "
+        else:
+            session.run("MERGE(u:User{id:$id}) "
                     "MERGE(m:Movie{title:$title}) "
                     "MERGE(u)-[:LIKED]->(m) "
                     "return u, m", {"title": review['movie_name'], "id": review['id'], "rated": review['rating']})
