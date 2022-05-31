@@ -1,3 +1,7 @@
 flask
 psycopg2
 werkzeug
+requests
+pymongo
+redis
+neo4j

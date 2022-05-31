@@ -1,4 +1,4 @@
-#!../venv/Scripts/python -u
+#app.py
 from ftplib import all_errors
 import re
 from flask import Flask, jsonify, request, session, redirect, url_for, render_template, flash
