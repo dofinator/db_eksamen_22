@@ -87,7 +87,7 @@ Copy the content of [sql](https://github.com/dofinator/db_eksamen_22/blob/master
 Run the following script from the root of the project:
 
 ```bash
-start_servers.sh
+./start_servers.sh
 ```
 Check to see if the neo4j cypher has finished running before accessing the client
 
