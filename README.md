@@ -12,7 +12,7 @@ Username and password for the different databases are located in settings.py
 Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used for the databases ins this project
 ## Usage
 
-### Run the script *docker-compose-all.sh* to start all docker containers:###
+### Run the script *docker-compose-all.sh* to start all docker containers: ###
 
 ```bash
 ./docker-compose-all.sh
