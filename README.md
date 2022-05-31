@@ -19,9 +19,8 @@ Make sure that the ports 27017,7687, 5432 & 6379 are unused, since they are used
 ```
 
 
-**Run the following command to install requirements**
+## Run the following command in the root of the project to install requirements ##
 
-**Run the command in the root of the project**
 
 ```bash
 pip install -r requirements.txt
