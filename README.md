@@ -92,6 +92,8 @@ Run the following script from the root of the project:
 ./start_servers.sh
 ```
 
+If the above bash script did not work, open the bash script with an editor and run each of the 3 start commands in 3 seperatly terminals
+
 :warning: **Check to see if the neo4j cypher has finished running before accessing the client**
 
 
